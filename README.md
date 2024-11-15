@@ -1,2 +1,2 @@
 # chorusiv
-Repo for Chrous tech assessment content
+Chrous tech assessment content deliverables
