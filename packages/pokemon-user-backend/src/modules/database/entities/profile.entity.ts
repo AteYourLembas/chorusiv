@@ -1,7 +1,13 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Pokemon } from '../entities/pokemon.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
+import { Pokemon } from './pokemon.entity';
 
-@Entity('profile')
+@Entity()
 export class Profile {
   @PrimaryGeneratedColumn('uuid')
   uuid: string;
@@ -9,9 +15,9 @@ export class Profile {
   @Column()
   name: string;
 
-  @ManyToMany(() => Pokemon) // Many-to-Many relationship with the Pokemon entity
+  @ManyToMany(() => Pokemon, (pokemon) => pokemon.profiles, { cascade: true })
   @JoinTable({
-    name: 'pokemon_profile_map', // Name of the join table
+    name: 'pokemon_profile_map',
     joinColumn: {
       name: 'profile_uuid',
       referencedColumnName: 'uuid',

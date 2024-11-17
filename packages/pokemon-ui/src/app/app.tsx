@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { EnhancedSortLabel } from './enhanced-sort-label';
 import styled from '@emotion/styled';
 import {
   AppBar,
@@ -11,7 +12,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TableSortLabel,
   TextField,
   Toolbar,
   Typography,
@@ -23,14 +23,14 @@ import { profileService } from '../services/profileService';
 interface Pokemon {
   uuid: string;
   name: string;
-  type: string;
+  pokemon_type: string;
   selected: boolean;
 }
 
 interface Profile {
   id: string;
   name: string;
-  pokemonIds: string[];
+  pokemon: Pokemon[];
 }
 
 const Container = styled(Box)`
@@ -45,10 +45,9 @@ export function App() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [profileName, setProfileName] = useState('');
-  const [orderBy, setOrderBy] = useState<'name' | 'type'>('name');
+  const [currentOrderBy, setOrderBy] = useState<'name' | 'pokemon_type' | 'selected'>('name');
   const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>('asc');
 
-  // Load Pokémon and Profiles on Initial Launch
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -69,9 +68,8 @@ export function App() {
     fetchInitialData();
   }, []);
 
-  // Handle Sorting
-  const handleSort = (property: keyof Pokemon) => {
-    const isAsc = orderBy === property && orderDirection === 'asc';
+  const handleSort = (property: 'name' | 'pokemon_type' | 'selected') => {
+    const isAsc = currentOrderBy === property && orderDirection === 'asc';
     setOrderDirection(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
     const sortedData = [...pokemon].sort((a, b) => {
@@ -82,14 +80,12 @@ export function App() {
     setPokemon(sortedData);
   };
 
-  // Handle Checkbox Selection
   const handleCheckboxChange = (index: number) => {
     const updatedPokemon = [...pokemon];
     updatedPokemon[index].selected = !updatedPokemon[index].selected;
     setPokemon(updatedPokemon);
   };
 
-  // Handle Profile Change
   const handleProfileChange = (
     _: React.SyntheticEvent,
     newValue: Profile | string | null
@@ -104,39 +100,45 @@ export function App() {
     } else if (newValue) {
       setProfileName(newValue.name);
       setSelectedProfile(newValue);
-
+  
+      // Extract Pokémon IDs from the selected profile
+      const selectedPokemonIds = newValue.pokemon.map((p) => p.uuid);
+  
       // Mark Pokémon in the selected profile as selected
       setPokemon((prevPokemon) =>
         prevPokemon.map((p) => ({
           ...p,
-          selected: newValue.pokemonIds.includes(p.uuid),
+          selected: selectedPokemonIds.includes(p.uuid),
         }))
       );
     }
   };
 
-  // Handle Save/Upsert Profile
   const handleUpsertProfile = async () => {
     if (!profileName) {
       console.error('Profile name is required');
       return;
     }
-
+  
     const selectedPokemonIds = pokemon
       .filter((p) => p.selected)
       .map((p) => p.uuid);
-
+  
     try {
       await profileService.upsertProfile(profileName, selectedPokemonIds);
-
+  
       const updatedProfiles = await profileService.getAllProfiles();
       setProfiles(updatedProfiles);
+  
+      // Only reset the state after the API calls succeed
+      // TODO: Improve UX -- don't clear profile after an update
       setProfileName('');
       setSelectedProfile(null);
       setPokemon((prevPokemon) =>
         prevPokemon.map((p) => ({ ...p, selected: false }))
       );
     } catch (error) {
+      // TODO: Show error message to the user
       console.error('Failed to upsert profile:', error);
     }
   };
@@ -150,12 +152,16 @@ export function App() {
           </Typography>
         </Toolbar>
       </AppBar>
+      <Box sx={{ height: 16 }} />
       <Autocomplete
         freeSolo
         options={profiles}
-        getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
+        getOptionLabel={(option) =>
+          typeof option === 'string' ? option : option.name
+        }
         value={selectedProfile || profileName}
         onChange={(event, newValue) => handleProfileChange(event, newValue)}
+        onInputChange={(event, newInputValue) => setProfileName(newInputValue)} // Update the profileName state
         renderInput={(params) => <TextField {...params} label="Profile" />}
         style={{ width: 300, marginBottom: 20 }}
       />
@@ -171,31 +177,42 @@ export function App() {
           <TableHead>
             <TableRow>
               <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'name'}
-                  direction={orderBy === 'name' ? orderDirection : 'asc'}
-                  onClick={() => handleSort('name')}
+                <EnhancedSortLabel
+                  property="name"
+                  currentOrderBy={currentOrderBy}
+                  orderDirection={orderDirection}
+                  handleSort={handleSort}
                 >
                   Name
-                </TableSortLabel>
+                </EnhancedSortLabel>
               </TableCell>
               <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'type'}
-                  direction={orderBy === 'type' ? orderDirection : 'asc'}
-                  onClick={() => handleSort('type')}
+                <EnhancedSortLabel
+                  property="pokemon_type"
+                  currentOrderBy={currentOrderBy}
+                  orderDirection={orderDirection}
+                  handleSort={handleSort}
                 >
                   Type
-                </TableSortLabel>
+                </EnhancedSortLabel>
               </TableCell>
-              <TableCell>Selected</TableCell>
+              <TableCell>
+                <EnhancedSortLabel
+                  property="selected"
+                  currentOrderBy={currentOrderBy}
+                  orderDirection={orderDirection}
+                  handleSort={handleSort}
+                >
+                  Selected
+                </EnhancedSortLabel>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {pokemon.map((p: Pokemon, index: number) => (
               <TableRow key={p.uuid}>
                 <TableCell>{p.name}</TableCell>
-                <TableCell>{p.type}</TableCell>
+                <TableCell>{p.pokemon_type}</TableCell>
                 <TableCell>
                   <Checkbox
                     checked={p.selected}

@@ -13,33 +13,34 @@ export class ProfileService {
         private profileRepository: Repository<Profile>,
     ) { }
 
+    async getAllProfiles() {
+        return this.profileRepository.find({
+            relations: ['pokemon'], // Include the related Pokémon data!
+        });
+    }
+
     async upsertProfile(name: string, pokemonIds: string[]) {
-        const profile = await this.profileRepository.findOne({
+        let profile = await this.profileRepository.findOne({
             where: { name },
-            relations: ['pokemon'], // Ensure existing relationships are loaded
+            relations: ['pokemon'],
         });
 
-        const pokemonEntities = await this.pokemonRepository.findBy({ uuid: In(pokemonIds) });
+        const pokemonEntities = await this.pokemonRepository.findBy({
+            uuid: In(pokemonIds),
+        });
 
         if (profile) {
-            // Update existing profile if it exists
-            profile.pokemon = pokemonEntities;
-            return this.profileRepository.save(profile);
+            // Update existing profile
+            profile.pokemon = pokemonEntities; // Replace Pokémon association
         } else {
-            // Otherwise add new profile
-            const newProfile = this.profileRepository.create({
+            // Create new profile
+            profile = this.profileRepository.create({
                 name,
                 pokemon: pokemonEntities,
             });
-            return this.profileRepository.save(newProfile);
         }
-    }
 
-    async getPokemonByProfile(profileId: string) {
-        const profile = await this.profileRepository.findOne({
-            where: { uuid: profileId },
-            relations: ['pokemon'],
-        });
-        return profile ? profile.pokemon : [];
+        // Save the profile, which also updates the linking table
+        return this.profileRepository.save(profile);
     }
 }

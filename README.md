@@ -1,6 +1,14 @@
 # chorusiv
 Chorus tech assessment content deliverables (WIP)
 
+TODO:
+
+- Polish pass
+- Go over App
+- Go over tests
+- DB indexes
+- Dump DDL somewhere
+
 # Chorus Interview
 
 ## About this Interview

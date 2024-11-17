@@ -1,6 +1,6 @@
 export const profileService = {
     async upsertProfile(name: string, pokemonIds: string[]) {
-        const response = await fetch('profile/upsert', {
+        const response = await fetch('/api/profile/upsert', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, pokemonIds }),
@@ -14,7 +14,7 @@ export const profileService = {
     },
 
     async getAllProfiles() {
-        const response = await fetch('profiles', {
+        const response = await fetch('/api/profile', {
             method: 'GET',
         });
 

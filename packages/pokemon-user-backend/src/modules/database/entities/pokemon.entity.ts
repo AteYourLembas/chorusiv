@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Profile } from './profile.entity';
 
 @Entity()
 export class Pokemon {
@@ -10,4 +11,7 @@ export class Pokemon {
 
   @Column()
   pokemon_type: string;
+
+  @ManyToMany(() => Profile, (profile) => profile.pokemon)
+  profiles: Profile[];
 }

@@ -11,15 +11,31 @@
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "pokemon-user-backend:build",
-        "runBuildTargetDependencies": false
+        "runBuildTargetDependencies": false    
       },
       "configurations": {
         "development": {
-          "buildTarget": "pokemon-user-backend:build:development"
-        },
+        },       
         "production": {
           "buildTarget": "pokemon-user-backend:build:production"
         }
+      }
+    },
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "defaultConfiguration": "development",
+      "options": {
+        "outputPath": "dist/packages/pokemon-user-backend",
+        "main": "packages/pokemon-user-backend/src/main.ts",
+        "tsConfig": "packages/pokemon-user-backend/tsconfig.app.json",
+        "webpackConfig": "packages/pokemon-user-backend/webpack.config.js",
+        "assets": [
+          {
+            "input": "packages/pokemon-user-backend/src/modules/database/init",
+            "glob": "**/*",
+            "output": "modules/database/init"
+          }
+        ]
       }
     }
   }

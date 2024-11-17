@@ -16,13 +16,13 @@ export class PokemonController {
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) { }
 
+  @Get()
+  async getAllProfiles() {
+    return this.profileService.getAllProfiles();
+  }
+
   @Post('upsert')
   async upsertProfile(@Body() profileData: { name: string; pokemonIds: string[] }) {
     return this.profileService.upsertProfile(profileData.name, profileData.pokemonIds);
-  }
-
-  @Get(':id/pokemon')
-  async getPokemon(@Param('id') profileId: string) {
-    return this.profileService.getPokemonByProfile(profileId);
   }
 }
