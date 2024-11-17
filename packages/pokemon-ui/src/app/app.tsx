@@ -49,24 +49,46 @@ export function App() {
   const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
+    // Save the current state of selected profile and Pokémon to localStorage
+    localStorage.setItem('selectedProfile', JSON.stringify(selectedProfile));
+  }, [selectedProfile]);
+
+  useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const allPokemon = await pokemonService.getAllPokemon();
         const allProfiles = await profileService.getAllProfiles();
-        setPokemon(
-          allPokemon.map((p: Omit<Pokemon, 'selected'>) => ({
-            ...p,
-            selected: false,
-          }))
-        );
+  
+        // Retrieve saved data from localStorage
+        // (Avoid discarding selection on hot reload)
+        const savedProfile = localStorage.getItem('selectedProfile');
+        if (savedProfile && JSON.parse(savedProfile)?.name) {
+          const parsedProfile = JSON.parse(savedProfile);
+          setSelectedProfile(parsedProfile);
+          setProfileName(parsedProfile?.name);
+        } else {
+          // Default case: load Pokémon and reset selections
+          setPokemon(
+            allPokemon.map((p: Omit<Pokemon, 'selected'>) => ({
+              ...p,
+              selected: false,
+            }))
+          );
+        }
         setProfiles(allProfiles);
       } catch (error) {
         console.error('Failed to load initial data:', error);
       }
     };
-
+  
     fetchInitialData();
   }, []);
+  
+  const deselectAllPokemon = () => {
+    setPokemon((prevPokemon) =>
+      prevPokemon.map((p) => ({ ...p, selected: false }))
+    );    
+  }
 
   const handleSort = (property: 'name' | 'pokemon_type' | 'selected') => {
     const isAsc = currentOrderBy === property && orderDirection === 'asc';
@@ -94,9 +116,7 @@ export function App() {
       setProfileName(newValue);
       setSelectedProfile(null);
       // Deselect all Pokémon when creating a new profile
-      setPokemon((prevPokemon) =>
-        prevPokemon.map((p) => ({ ...p, selected: false }))
-      );
+      deselectAllPokemon();
     } else if (newValue) {
       setProfileName(newValue.name);
       setSelectedProfile(newValue);
@@ -152,7 +172,7 @@ export function App() {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Box sx={{ height: 16 }} />
+      <Box sx={{ height: 24 }} />
       <Autocomplete
         freeSolo
         options={profiles}
@@ -161,7 +181,15 @@ export function App() {
         }
         value={selectedProfile || profileName}
         onChange={(event, newValue) => handleProfileChange(event, newValue)}
-        onInputChange={(event, newInputValue) => setProfileName(newInputValue)} // Update the profileName state
+        onInputChange={(_, newInputValue) => {
+          setProfileName(newInputValue);
+          // If the input does not match an existing profile, deselect all Pokémon
+          // This allows a user to start a new profile by deleting an selected profile name
+          if (!profiles.some((profile) => profile.name === newInputValue)) {
+            setSelectedProfile(null);
+            deselectAllPokemon();
+          }
+        }}
         renderInput={(params) => <TextField {...params} label="Profile" />}
         style={{ width: 300, marginBottom: 20 }}
       />
