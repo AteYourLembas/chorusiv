@@ -1,149 +1,62 @@
-# chorusiv
-Chorus tech assessment content deliverables (WIP)
+# Chorus Interview Deliverable
 
-TODO:
+## About This Deliverable
 
-- Polish pass
-- Go over App
-- Go over tests
-- DB indexes
-- Dump DDL somewhere
+The goals of this project, as understood:
+- Produce beautiful code
+- Show strengths
+- Demonstrate obsession with strong systems and high productivity
+- Decide if this is a stack I want to work on
 
-# Chorus Interview
-
-## About this Interview
-
-Welcome to Chorus Engineering's Interview project!
-
-We're looking for engineers who are experienced, passionate, and obsessed with strong systems and high productivity.
-
-In order to facilitate this, we are providing an interview project that mirrors the technical stack that used
-here at Chorus.
-
-**You, the interviewee, have the power to decide if this is the technology that you want to work on!**
-
-The goal of this interview is to identify strengths through a take home project, followed by
-a 1 hour pairing session that will extend your work by creating features together.
-
-## Tech Stack
-
-- React UI
-- Emotion CSS
-- Typescript
-- Node/NestJS Backend
-- NX Monorepo
-- Github Actions CI
-- PostgreSQL Database
-- Docker / Docker Desktop
+Toward those goals, this repo includes
+- an E2E Typescript project of 4 frontend features served by 3 endpoints
+- PostgreSQL Database in Docker container initialized by script
+- an assessment of the assessment (below)
 
 ## Prerequisites
 
-Package Manager: pnpm 8.15.8
+- Virtual environment -- environment may have changed from [source repo](https://github.com/ChorusInnovations/engineering-interview/tree/main) 
+- Familiarity with the source repo installation steps
 
-Node: 20.14.0 (LTS)
+## Connecting to the Database
 
-Docker
+In order to allow initializing the database at startup, container initialization has been refactored. As a result, the port number is no longer fixed. To explore the database, I recommend using psql on the container itself. To test the connection, as needed, I recommend using psql from the host.
 
-## Instructions
+## Descoped
 
-### Install Preqresuites
-1. [Install nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
+- Limiting Pokémon selections per team to 6
+- Guarantee that the 150 Pokémon shown are the *first* Pokémon
+- Query indexing
+- More thoughtful unit tests
 
-Use this command to install node and npm comes with it.
-```bash
-nvm install --lts 
-```
+## Learnings
 
-2. Install pnpm
-```bash
-npm i -g pnpm@8.15.8
-```
-3. [Install Docker / Docker Desktop](https://www.docker.com/products/docker-desktop/)
+In any project, there is promotable work -- e.g. design, execution -- and non-promotable work -- SDLC, troubleshooting, coordination. In the case of this interview, we can agree "promotion" means advancing to the next interview, which is achieved by meeting the goals stated above. 
 
+Unfortunately, due to the complexity of the tooling and the unfamiliarity of the development environment, I spent only 25% of my time on this project on promotable work. I spent the other 75% on:
 
-### Getting and Running the Repository
+- Troubleshooting Docker
+    - A forgotten PostgreSQL process shared :5432
+    - At some point Docker itself became nonresponsive, which I've never seen before, and took time to track down.
 
-**The Hiring Manager will send you a link to this repository.**
+- Navigating DataGrip
+    - Having no familiarity with it, I expected it to provide some kind of data persistence for the DB. I ended up using it to design the tables, but the UI was a learning curve, and it would have been more efficient to compose the SQL.  
 
-Clone this repository, and run the commands below to get started.
+- Figuring out how to ship the database updates
+     - I wanted it to work the way it now works, so that's what I did. If there was an easier way, I did not discover it.
 
-1. Run `pnpm install`
-2. Run `pm2 start`
+## Self-Assessment
 
-> Note: The API and React server will automatically watch for changes.
+Did I produce beautiful code? Debatable. I am shipping code that does not embarrass me. But I hope you find it easy to read. There is beauty in that.
 
-You can manage start/stop using `pm2`.
+Did I show strengths? I expect any intermediate engineer could ship what's here. If anything, I showed an old weakness -- an inability to call it quits when I just want to see it work.
 
-Use `pm2 logs` to see the logs from all processes.
+Did I demonstrate obsession with strong systems? Debatable. I did not show any consideration to scaling, security, or more than perfunctory testing. Perhaps these can be items to discuss.
 
-Use `pm2 stop all` to stop the servers.
+Did I demonstrate obsession with high productivity? That is where I may be most useful to you. Non-promotable work eats engineers. We have to eat it back.
 
-Use `pm2 delete all` to delete the entry from the pm2 process list.
+In order to reduce the amount of non-promotable work lurking in this interview, so that your candidates may have more time to impress you, I encourage you to omit the live DB and instead back the server with a JSON flat file. The candidate is still responsible for the design, the data is browsable, and the updates are easy ship back for review.
 
-### Connecting to the Database
-Use whatever tool you'd like to connect to the database.
+I would be very happy to make this the content of our pair-programming session.
 
-[We recommend DataGrip.](https://www.jetbrains.com/datagrip/)
-
-Here are the connection details below.
-
-- **Database**: pokemon
-- **Username**: admin
-- **Password**: admin
-- **Host**: localhost
-- **Port**: 5432
-
-## Prompt
-
-Lets make a Pokémon Team builder!
-
-We want to create a way to select 6 Pokémon to be on our team.
-
-The UI should allow the user to:
-
-1. View a list of the first 150 Pokémon
-2. Select from the list of Pokémon
-3. Submit the Pokémon that we have selected to the backend.
-
-**It does not have to be a beautiful UX experience. We're aiming for functional.**
-
-### Completion Criteria
-
-Database Requirements
-
-- There should be a Profile table
-- There should be a Pokémon table
-- There should be a relationship between Pokémon and Profiles.
-
-UI Requirements
-
-- Show a list of the first 150 Pokémon
-- Show selectable Profiles
-- Select a profile, and choose up to 6 Pokémon.
-
-API Requirements
-
-- Return pokemon
-- Create Profiles
-- Handle receiving Pokémon related to Profiles
-
-## Submission Criteria
-
-All of your work should be located in a Github Repo.
-
-Ensure your repo is public, and submit the URL back to the hiring manager.
-
-### Troubleshooting
-
-> I can't execute pm2!
-
-pm2 is part of the devDependencies, so when you install the dependencies, you should be able to
-execute the binary from node_modules.
-
-Either use `pnpm pm2` or add `node_modules/.bin` to your `PATH`.
-
-> The requirements are confusing. I'm stuck.
-
-Contact the hiring manager, and inform them of the situation. Be specific and clear about your concerns or issues.
-
->>>>>>> e4c6aa2 (WIP -- inital commit before polish pass)
+Looking forward to hearing from you!
